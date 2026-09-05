@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Loader2, LogOut, Menu, ShoppingBag } from "lucide-react";
+import { Loader2, LogOut, Menu, ShoppingBag, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/sheet";
 import { IUser } from "@/interfaces";
 import { clearSessionOnAuthError } from "@/services/users";
+import { useCartStore } from "@/store/cart-store";
 import { useUserStore } from "@/store/user-store";
 import MenuItems from "./menu-items";
 
@@ -34,8 +35,11 @@ const PrivateLayoutHeader = ({ user }: { user: IUser }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const clearUser = useUserStore((state) => state.clearUser);
+  const cart = useCartStore((state) => state.cart);
+  const hasCartHydrated = useCartStore((state) => state.hasHydrated);
   const displayName = user.name?.trim() || user.email;
   const hasPhoto = Boolean(user.profile_pic?.trim());
+  const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
 
   async function handleSignOut() {
     if (isSigningOut) return;
@@ -53,7 +57,7 @@ const PrivateLayoutHeader = ({ user }: { user: IUser }) => {
     <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-black">
       <div className="flex w-full items-center justify-between px-4 py-3">
         <Link
-          href="/"
+          href={user.role === "admin" ? "/admin/dashboard" : "/user/dashboard"}
           className="inline-flex items-center gap-2 text-2xl font-bold tracking-tight text-white"
         >
           <ShoppingBag className="size-6" aria-hidden />
@@ -61,7 +65,28 @@ const PrivateLayoutHeader = ({ user }: { user: IUser }) => {
         </Link>
 
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-3 rounded-full border border-white/10 bg-white/5 py-1 pl-3.5 pr-1 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]">
+          <Link
+            href="/user/cart"
+            aria-label={
+              hasCartHydrated && cartCount > 0
+                ? `Cart, ${cartCount} items`
+                : "Cart"
+            }
+            className="relative inline-flex size-10 items-center justify-center rounded-full text-white transition-colors hover:bg-white/10"
+          >
+            <ShoppingCart className="size-5" aria-hidden />
+            {hasCartHydrated && cartCount > 0 ? (
+              <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-400 px-1 text-[10px] font-semibold text-black">
+                {cartCount > 99 ? "99+" : cartCount}
+              </span>
+            ) : null}
+          </Link>
+
+          <Link
+            href="/user/profile"
+            className="flex items-center gap-3 rounded-full border border-white/10 bg-white/5 py-1 pl-3.5 pr-1 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)] transition-colors hover:bg-white/10"
+            aria-label="Open profile"
+          >
             <div className="flex min-w-0 flex-col items-end leading-tight">
               <span className="max-w-[140px] truncate text-sm font-medium text-white sm:max-w-[200px]">
                 {displayName}
@@ -80,7 +105,7 @@ const PrivateLayoutHeader = ({ user }: { user: IUser }) => {
                 </div>
               )}
             </div>
-          </div>
+          </Link>
 
           <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
             <SheetTrigger asChild>

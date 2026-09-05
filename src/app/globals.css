@@ -9,6 +9,10 @@
   font-weight: 500 !important;
 }
 
+.font-bold {
+  font-weight: 700 !important;
+}
+
 @theme inline {
   --font-heading: var(--font-sans);
   --font-sans: var(--font-sans);

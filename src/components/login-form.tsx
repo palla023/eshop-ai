@@ -53,7 +53,7 @@ export function LoginForm() {
     try {
       const user = await loginUser(data)
       const destination =
-        user.role === "admin" ? "/admin/dashboard" : "/user/products"
+        user.role === "admin" ? "/admin/dashboard" : "/user/dashboard"
       toast.success("Logged in successfully.")
       window.location.assign(destination)
     } catch (error) {

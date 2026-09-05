@@ -51,7 +51,7 @@ const PrivateLayout = ({children}: {children: React.ReactNode}) => {
   return (
     <div className='flex flex-col min-h-full'>
         <PrivateLayoutHeader user={user} />
-        <main className='flex-1 p-5 max-w-6xl mx-auto'>
+        <main className='w-full flex-1 px-4 py-5'>
             {children}
         </main>
     </div>

@@ -28,7 +28,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <CustomLayout >
         {children}
         </CustomLayout>
-        <Toaster position="top-right" />
+        <Toaster position="top-center" />
       </body>
     </html>
   );
