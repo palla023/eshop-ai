@@ -1,36 +1,109 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Next.js Auth Starter
 
-## Getting Started
+Reusable Next.js starter with **Supabase Auth**, **role-based layouts**, and **placeholder pages** you can copy into any new project.
 
-First, run the development server:
+Built with Next.js 16, React 19, Tailwind CSS 4, shadcn/ui, Zustand, and Supabase.
+
+## What you get
+
+- Public routes: home, login, register
+- Private routes: dashboard and role-based pages
+- User vs admin menus
+- Session checks in Next.js `proxy.ts` (JWT claims, not cookie-only `getSession()`)
+- Client layout that loads the current profile and redirects if the session is invalid
+- Login / register forms with Zod + React Hook Form
+- Sign out that clears the Supabase session
+
+## App structure
+
+```text
+src/
+  app/
+    (public)/          # /, /login, /register
+    (private)/         # dashboard, products, orders, users, categories
+  customLayout/        # public vs private shell, header, menus
+  components/          # login/register forms + UI primitives
+  config/              # Supabase browser + proxy clients
+  services/users.ts    # signup, login, current user, sign out
+  store/user-store.ts  # Zustand current-user store
+  proxy.ts             # protect everything except public routes
+```
+
+After login:
+
+- **user** → `/user/products`
+- **admin** → `/admin/dashboard`
+
+Promote a registered user to admin in Supabase (see SQL below). Registration always creates a `user` profile.
+
+## Setup
+
+1. Clone the repo and install dependencies:
+
+```bash
+git clone https://github.com/palla023/nextjs-auth-starter.git
+cd nextjs-auth-starter
+npm install
+```
+
+2. Create a [Supabase](https://supabase.com) project.
+
+3. Copy env vars:
+
+```bash
+cp .env.example .env
+```
+
+Fill in `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` from **Project Settings → API**.
+
+4. Run `supabase/schema.sql` in the Supabase SQL editor. That creates `user_profiles` with RLS.
+
+5. Start the app:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Make someone an admin
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```sql
+update public.user_profiles
+set role = 'admin'
+where email = 'you@example.com';
+```
 
-## Learn More
+Then sign in with the **Admin** role selected on the login form.
 
-To learn more about Next.js, take a look at the following resources:
+## Reuse in another Next.js app
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Copy these pieces first:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Piece | Why |
+| --- | --- |
+| `src/config/` + `src/proxy.ts` | Auth cookies and route protection |
+| `src/services/users.ts` | Register, login, current user |
+| `src/store/user-store.ts` + `src/interfaces/` | Client user state |
+| `src/customLayout/` | Header, menus, private shell |
+| `src/components/login-form.tsx` + `register-form.tsx` | Auth UI |
+| `src/app/(public)` + `src/app/(private)` | Route groups |
 
-## Deploy on Vercel
+Then:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. Add the same env vars
+2. Run the SQL schema
+3. Point `customLayout` public routes at your own public paths
+4. Replace placeholder pages with your product screens
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Scripts
+
+```bash
+npm run dev    # development
+npm run build  # production build
+npm run start  # serve the production build
+```
+
+## License
+
+MIT
